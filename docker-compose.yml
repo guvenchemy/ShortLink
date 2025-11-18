@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+    app:
+        image: shortlink-app
+        build:
+            context: .
+            dockerfile: dockerfile
+        ports:
+            - "5000:8080"
+        environment:
+            - ConnectionStrings__DefaultConnection=Host=db;Database=ShortLinkDb;Username=postgres;Password=CHANGE_ME
+            - ASPNETCORE_ENVIROMENT=Production
+        depends_on:
+            - db
+
+    db:
+        image: postgres:15
+        environment:
+            - POSTGRES_DB=ShortLinkDb
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=CHANGE_ME
+        volumes:
+            - postgresdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"] # PostgreSQL hazır mı diye sor
+            interval: 5s # 5 saniyede bir dene
+            timeout: 5s
+            retries: 5 # 5 kere dene, olmazsa pes et
+volumes:
+    postgresdata:

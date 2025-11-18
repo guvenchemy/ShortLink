@@ -1,0 +1,75 @@
+﻿@model IEnumerable<ShortLink.Models.ShortenedUrl>
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">🚀 Link Yönetim Paneli</h2>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Yeni Link Kısalt</h5>
+            <form asp-action="Create" method="post" class="row g-3">
+                <div class="col-md-10">
+                    <input type="url" name="originalUrl" class="form-control" placeholder="https://ornek-site.com/cok-uzun-link..." required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Kısalt!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header">
+            Senin Linklerin
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Kısa Kod</th>
+                        <th>Orijinal URL</th>
+                        <th>Tıklanma</th>
+                        <th>Tarih</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a href="/@item.ShortCode" target="_blank" class="fw-bold text-decoration-none">
+                                    @Context.Request.Scheme://@Context.Request.Host/@item.ShortCode
+                                </a>
+                            </td>
+                            <td class="text-truncate" style="max-width: 300px;" title="@item.OriginalUrl">
+                                @item.OriginalUrl
+                            </td>
+                            <td>
+                                <span class="badge bg-success">@item.ClickCount</span>
+                            </td>
+                            <td>@item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Bu linki gerçekten silmek istiyor musun?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Sil
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center p-4 text-muted">
+                    Henüz hiç link kısaltmadın. Yukarıdan bir tane oluştur! 👇
+                </div>
+            }
+        </div>
+    </div>
+</div>
