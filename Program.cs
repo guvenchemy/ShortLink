@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ShortLink.Data;
-using Microsoft.AspNetCore.Identity; 
+using Microsoft.AspNetCore.Identity;
+using Prometheus;
+using Microsoft.AspNetCore.HttpOverrides;
 namespace ShortLink
 {
     public class Program
@@ -27,6 +29,12 @@ namespace ShortLink
             builder.Services.AddRazorPages();
 
             var app = builder.Build();
+
+            var forwardedHeaderOptions = new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+            };
+
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -42,6 +50,7 @@ namespace ShortLink
                     logger.LogError(ex, "An error occurred while migrating the database.");
                 }
             }
+            app.UseForwardedHeaders(forwardedHeaderOptions);
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -54,7 +63,9 @@ namespace ShortLink
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseHttpMetrics(); // gelen istekleri saymaya başlar
             app.UseAuthentication();
+            app.MapMetrics(); // /metrics adresini açar Prometheus buradan veri çeker
             app.UseAuthorization();
 
             app.MapControllerRoute(
